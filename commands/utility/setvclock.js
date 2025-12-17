@@ -1,10 +1,10 @@
 import { saveDatabase } from '../../functions/database.js';
 
 export default {
-  name: "removeuser",
-  aliases: ["unallow", "unwhitelist"],
+  name: "setvclock",
+  aliases: ["vclock"],
   category: "utility",
-  description: "Remove a user from the allowed list (Owner only)",
+  description: "Lock music commands to specific voice channel (Owner only)",
 
   async execute(message, args, client) {
     if (message.author.id !== process.env.OWNER_ID) {
@@ -16,8 +16,10 @@ export default {
     if (args.length !== 1) {
       const response = '```js\n' +
         'Usage\n\n' +
-        ' removeuser <user_id>\n' +
-        '\nExample: removeuser 123456789012345678\n' +
+        ' setvclock <channel_id or none>\n' +
+        '\nExample:\n' +
+        ' setvclock 123456789012345678\n' +
+        ' setvclock none\n' +
         '\n╰──────────────────────────────────╯\n```';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
@@ -25,32 +27,22 @@ export default {
       return;
     }
 
-    const userId = args[0].replace(/[^0-9]/g, '');
-    if (!userId || userId.length < 17) {
+    const input = args[0].toLowerCase();
+    const channelId = input === "none" ? null : args[0].replace(/[^0-9]/g, '');
+
+    if (channelId && channelId.length < 17) {
       await message.react("❌").catch(() => {});
       if (message.deletable) message.delete().catch(() => {});
       return;
     }
 
-    const list = client.db.config.allowedUsers;
-    if (!list.includes(userId)) {
-      const response = '```js\n' +
-        'User Not Found\n\n' +
-        ` ID: ${userId}\n` +
-        ' Not in allowed list\n' +
-        '\n╰──────────────────────────────────╯\n```';
-      const msg = await message.channel.send(response);
-      setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
-      return;
-    }
-
-    client.db.config.allowedUsers = list.filter(id => id !== userId);
+    client.db.config.lockVcChannel = channelId;
     saveDatabase(client.db);
 
     const response = '```js\n' +
-      'User Removed Successfully\n\n' +
-      ` ID: ${userId}\n` +
-      ` Remaining: ${client.db.config.allowedUsers.length}\n` +
+      'Voice Channel Lock Updated\n\n' +
+      ` Status: ${channelId ? "Locked" : "Unlocked"}\n` +
+      ` Channel: ${channelId || "Any"}\n` +
       '\n╰──────────────────────────────────╯\n```';
 
     const msg = await message.channel.send(response);
