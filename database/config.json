@@ -1,0 +1,8 @@
+{
+  "noPrefixMode": true,
+  "rateLimits": {
+    "maxCommands": 5,
+    "timeWindow": 10000
+  },
+  "allowedUsers": []
+}
