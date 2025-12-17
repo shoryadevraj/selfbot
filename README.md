@@ -71,6 +71,11 @@ This will show all available commands inside Discord.
 | commands/ | Command modules |
 | filters/ | Music filter definitions |
 
+## New Features
+How it works:
+
+All features are configurable with commands (e.g., !setautodelete 60, !setforceprefix true, !settextlock 123456789, !setvclock none, !setlavalink http://newhost:2333 ws://newhost:2333 newpassword)
+
 
 ## Contributing
 
