@@ -3,7 +3,7 @@ import { Client } from 'discord.js-selfbot-v13';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { loadDatabase } from './functions/database.js';
+import { loadDatabase, saveDatabase } from './functions/database.js';
 import Lavalink from './functions/lavalink.js';
 import queueManager from './functions/queue.js';
 
@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const client = new Client({ checkUpdate: false });
 
-const lavalink = new Lavalink({
+let lavalink = new Lavalink({
     restHost: process.env.LAVALINK_REST,
     wsHost: process.env.LAVALINK_WS,
     password: process.env.LAVALINK_PASSWORD,
@@ -77,6 +77,7 @@ client.startTrack = async (guildId, track) => {
             filters: queue.filters || {}
         });
 
+        // Optional visual feedback (react)
         queue.textChannel?.react?.("▶").catch(() => {});
 
         const duration = track.info.length || 180000;
@@ -102,40 +103,48 @@ client.playNext = async (guildId) => {
     await client.startTrack(guildId, next);
 };
 
+// Reload Lavalink on config change
+client.reloadLavalink = () => {
+    lavalink = new Lavalink({
+        restHost: client.db.config.lavalinkRest,
+        wsHost: client.db.config.lavalinkWs,
+        password: client.db.config.lavalinkPassword,
+        clientName: process.env.CLIENT_NAME || 'Selfbot',
+    });
+    client.lavalink = lavalink;
+    lavalink.connect(client.user.id);
+    console.log('[Lavalink] Reloaded with new config');
+};
+
 // Ready
 client.on('ready', () => {
     console.log(`\nLogged in as ${client.user.tag}`);
-    console.log('Auto-queue: 100% WORKING');
-    console.log('Text lock: ' + (process.env.LOCK_TEXT_CHANNEL ? 'ENABLED' : 'DISABLED'));
-    console.log('Voice lock: ' + (process.env.LOCK_VOICE_CHANNEL ? 'ENABLED' : 'DISABLED'));
-    console.log('Force prefix: ' + (process.env.FORCE_PREFIX === 'true' ? 'YES' : 'NO'));
+    console.log('Auto-queue: WORKING');
     lavalink.connect(client.user.id);
 });
 
-// ULTIMATE COMMAND HANDLER — FULLY CONTROLLABLE FEATURES
+// COMMAND HANDLER
 client.on('messageCreate', async message => {
     if (message.author.bot || !message.guild) return;
 
-    // Owner + allowed users
+    const db = client.db;
+
+    // OWNER + ALLOWED USERS CHECK
     const isOwner = message.author.id === process.env.OWNER_ID;
-    const isAllowed = client.db.config?.allowedUsers?.includes(message.author.id);
+    const isAllowed = db.config.allowedUsers.includes(message.author.id);
     if (!isOwner && !isAllowed) return;
 
     const prefix = process.env.PREFIX || "!";
 
-    // FEATURE 1: FORCE PREFIX (ignores DB noPrefixMode)
-    const forcePrefix = process.env.FORCE_PREFIX === "true";
-    if (forcePrefix && !message.content.startsWith(prefix)) return;
+    // LOCK TO TEXT CHANNEL IF SET
+    if (db.config.lockTextChannel && message.channel.id !== db.config.lockTextChannel) return;
 
-    // FEATURE 2: LOCK TO SPECIFIC TEXT CHANNEL
-    if (process.env.LOCK_TEXT_CHANNEL && message.channel.id !== process.env.LOCK_TEXT_CHANNEL) return;
+    // FORCE PREFIX IF SET
+    if (db.config.forcePrefix && !message.content.startsWith(prefix)) return;
 
-    // Parse args (respect noPrefixMode unless forcePrefix)
+    // PREFIX/NO-PREFIX LOGIC
     let args = [];
-    if (forcePrefix) {
-        if (!message.content.startsWith(prefix)) return;
-        args = message.content.slice(prefix.length).trim().split(/ +/);
-    } else if (!client.db.noPrefixMode) {
+    if (db.config.forcePrefix || !db.noPrefixMode) {
         if (!message.content.startsWith(prefix)) return;
         args = message.content.slice(prefix.length).trim().split(/ +/);
     } else {
@@ -146,20 +155,25 @@ client.on('messageCreate', async message => {
     const command = client.commands.get(cmdName) || client.commands.get(client.aliases.get(cmdName));
     if (!command) return;
 
-    // FEATURE 3: LOCK MUSIC TO SPECIFIC VOICE CHANNEL
-    if (process.env.LOCK_VOICE_CHANNEL && command.category === "music") {
-        const requiredVC = process.env.LOCK_VOICE_CHANNEL;
-        if (!message.member?.voice?.channel || message.member.voice.channel.id !== requiredVC) {
-            return message.channel.send("```Join the music voice channel first```");
+    // LOCK TO VC FOR MUSIC IF SET
+    if (command.category === "music" && db.config.lockVcChannel) {
+        if (!message.member?.voice?.channel || message.member.voice.channel.id !== db.config.lockVcChannel) {
+            return message.channel.send("```You must be in the locked voice channel for music commands```");
         }
     }
 
     try {
         if (message.deletable) await message.delete().catch(() => {});
-        await command.execute(message, args, client);
+        const reply = await command.execute(message, args, client);
+
+        // AUTO DELETE BOT MESSAGE AFTER TIME
+        if (reply?.id) {
+            setTimeout(() => {
+                reply.delete().catch(() => {});
+            }, db.config.autoDeleteTime || 30000);
+        }
     } catch (error) {
-        console.error("Command error:", error);
-        message.channel.send("```An error occurred```").catch(() => {});
+        console.error("Command error:", error.message);
     }
 });
 
