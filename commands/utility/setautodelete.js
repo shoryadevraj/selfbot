@@ -6,14 +6,26 @@ export default {
   category: "utility",
 
   async execute(message, args, client) {
-    if (args.length !== 1) return message.channel.send("```Usage: setautodelete <seconds>```");
+    if (args.length !== 1) {
+      return message.channel.send("```Usage: setautodelete <seconds>```");
+    }
 
     const time = parseInt(args[0]);
-    if (isNaN(time) || time < 5) return message.channel.send("```Time must be at least 5 seconds```");
+    if (isNaN(time) || time < 5) {
+      return message.channel.send("```Minimum 5 seconds```");
+    }
 
     client.db.config.autoDeleteTime = time * 1000;
     saveDatabase(client.db);
 
-    message.channel.send("```js\nAuto-delete time set to " + args[0] + " seconds\n```");
+    const response = '```js\n' +
+      '  Auto-delete time updated\n' +
+      `  New time: ${time} seconds\n` +
+      '\n╰──────────────────────────────────╯\n```';
+
+    const msg = await message.channel.send(response);
+    
+    // Auto-delete the response
+    setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
   }
 };
