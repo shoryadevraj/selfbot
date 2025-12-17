@@ -23,6 +23,8 @@ export default {
     response += ` Volume: ${queue.volume}%\n`;
     response += ` Queue: ${queue.songs.length} song${queue.songs.length === 1 ? '' : 's'}\n`;
     response += '\n╰──────────────────────────────────╯\n```';
+    // Inside the response string
+    response += ` Status: ${queue.paused ? "Paused" : "Playing"}\n`;
 
     await message.channel.send(response);
 
