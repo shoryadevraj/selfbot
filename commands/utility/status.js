@@ -24,7 +24,7 @@ export default {
     response += ` Auto-Delete: ${db.autoDeleteTime / 1000}s\n`;
     response += ` Lavalink: ${db.lavalinkRest}\n\n`;
 
-    response += 'Created by Quantheon Development\n';
+    response += 'Created by Shorya Devraj\n';
     response += '╰──────────────────────────────────╯\n```';
 
     const msg = await message.channel.send(response);
