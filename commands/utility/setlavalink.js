@@ -1,3 +1,5 @@
+import { saveDatabase } from '../../functions/database.js';
+
 export default {
   name: "setlavalink",
   aliases: ["lavalink"],
