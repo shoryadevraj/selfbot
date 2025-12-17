@@ -21,14 +21,21 @@ const DEFAULT_CONFIG = {
         maxCommands: 5,
         timeWindow: 10000
     },
-    allowedUsers: []
+    allowedUsers: [],
+    autoDeleteTime: 30000, // ms
+    forcePrefix: false,
+    lockTextChannel: null,
+    lockVcChannel: null,
+    lavalinkRest: process.env.LAVALINK_REST || "http://localhost:2333",
+    lavalinkWs: process.env.LAVALINK_WS || "ws://localhost:2333",
+    lavalinkPassword: process.env.LAVALINK_PASSWORD || "youshallnotpass"
 };
 
 const DEFAULT_USERS = {
     users: []
 };
 
-// Initialize/Load config.json
+// Load DB
 function loadConfig() {
     if (!fs.existsSync(CONFIG_PATH)) {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 2));
@@ -36,7 +43,6 @@ function loadConfig() {
     return JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
 }
 
-// Initialize/Load users.json
 function loadUsers() {
     if (!fs.existsSync(USERS_PATH)) {
         fs.writeFileSync(USERS_PATH, JSON.stringify(DEFAULT_USERS, null, 2));
@@ -48,17 +54,15 @@ function loadUsers() {
 export function loadDatabase() {
     const config = loadConfig();
     const users = loadUsers();
-
     return {
         config,
         users,
-        noPrefixMode: config.noPrefixMode // easier access
+        noPrefixMode: config.noPrefixMode
     };
 }
 
 export function saveDatabase(db) {
     fs.writeFileSync(CONFIG_PATH, JSON.stringify(db.config, null, 2));
-
     if (db.users) {
         fs.writeFileSync(USERS_PATH, JSON.stringify(db.users, null, 2));
     }
