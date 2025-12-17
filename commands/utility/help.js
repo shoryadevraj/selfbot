@@ -19,54 +19,50 @@ export default {
       categories.get(cat).push(cmd);
     }
 
+    let response = '```js\n';
+
     // Specific category
     if (categoryArg) {
       const cat = [...categories.keys()].find(c => c === categoryArg);
       if (!cat) {
-        return message.channel.send("```js\nCategory not found!\n```");
+        response += 'Category Not Found\n\n';
+        response += ` "${categoryArg}" does not exist\n`;
+      } else {
+        const cmds = categories.get(cat);
+        response += `${cat.toUpperCase()} COMMANDS\n\n`;
+        cmds.forEach((cmd, i) => {
+          response += `${i + 1}. ${cmd.name}`;
+          if (cmd.aliases?.length) {
+            response += ` (${cmd.aliases.join(", ")})`;
+          }
+          response += `\n   ${cmd.description || "No description"}\n`;
+          if (cmd.usage) {
+            response += `   Usage: ${prefix}${cmd.usage}\n`;
+          }
+          response += `\n`;
+        });
       }
-
-      const cmds = categories.get(cat);
-      let response = '```js\n';
-      response += `${cat.toUpperCase()} COMMANDS\n\n`;
-
-      cmds.forEach((cmd, i) => {
-        response += `${i + 1}. ${cmd.name}`;
-        if (cmd.aliases?.length) {
-          response += ` (${cmd.aliases.join(", ")})`;
-        }
-        response += `\n   ${cmd.description || "No description"}\n`;
-        if (cmd.usage) {
-          response += `   Usage: ${prefix}${cmd.usage}\n`;
-        }
-        response += `\n`;
+    } else {
+      // Main menu
+      response += 'S SELFBOT — COMMANDS\n\n';
+      const sorted = [...categories.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+      sorted.forEach(([cat, cmds], i) => {
+        const name = cat.charAt(0).toUpperCase() + cat.slice(1);
+        response += `${i + 1}. ${name} (${cmds.length} command${cmds.length === 1 ? '' : 's'})\n`;
       });
-
-      response += '╰──────────────────────────────────╯\n```';
-      await message.channel.send(response);
-      return;
+      response += `\nUsage: ${prefix}help <category>\n`;
+      response += `Example: ${prefix}help music\n\n`;
+      response += 'Created by Shorya Devraj\n';
     }
 
-    // Main help menu
-    let response = '```js\n';
-    response += 'S SELFBOT — COMMANDS\n\n';
-
-    const sorted = [...categories.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-    sorted.forEach(([cat, cmds], i) => {
-      const name = cat.charAt(0).toUpperCase() + cat.slice(1);
-      response += `${i + 1}. ${name} (${cmds.length} command${cmds.length === 1 ? '' : 's'})\n`;
-    });
-
-    response += `\nUsage: ${prefix}help <category>\n`;
-    response += `Example: ${prefix}help music\n\n`;
-    response += 'Created by Shorya Devraj\n';
     response += '╰──────────────────────────────────╯\n```';
 
-    await message.channel.send(response);
+    const msg = await message.channel.send(response);
 
-    // Clean chat
-    if (message.deletable) {
-      message.delete().catch(() => {});
-    }
+    // Auto-delete response
+    setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+
+    // Delete command message
+    if (message.deletable) message.delete().catch(() => {});
   }
 };
