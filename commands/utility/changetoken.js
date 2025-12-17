@@ -1,50 +1,76 @@
+
+import fs from 'fs';
+import path from 'path';
+
 export default {
   name: "changetoken",
   aliases: ["newtoken", "updatetoken"],
   category: "utility",
-  description: "Update the bot token (OWNER ONLY - USE WITH CAUTION)",
+  description: "Update the bot token (OWNER ONLY - DANGEROUS)",
 
   async execute(message, args, client) {
-    // ONLY the real owner (from .env) can use this
     if (message.author.id !== process.env.OWNER_ID) {
-      return message.channel.send("```Only the bot owner can use this command```");
+      await message.react("❌").catch(() => {});
+      if (message.deletable) message.delete().catch(() => {});
+      return;
     }
 
     if (args.length !== 1) {
-      return message.channel.send("```Usage: changetoken <new_discord_token>```");
+      const response = '```js\n' +
+        'Usage\n\n' +
+        ' changetoken <new_token>\n' +
+        '\nWarning: Invalid token will disconnect bot temporarily\n' +
+        '\n╰──────────────────────────────────╯\n```';
+      const msg = await message.channel.send(response);
+      setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+      return;
     }
 
     const newToken = args[0].trim();
 
-    // Basic validation (Discord tokens are ~59-80 chars, contain . and _)
     if (!/^[A-Za-z0-9_\.\-]{50,100}$/.test(newToken)) {
-      return message.channel.send("```Invalid token format```");
+      await message.react("❌").catch(() => {});
+      return;
     }
 
+    const response = '```js\n' +
+      'Changing Token\n\n' +
+      ' Logging out...\n' +
+      ' Logging in with new token...\n' +
+      '\n╰──────────────────────────────────╯\n```';
+
+    const statusMsg = await message.channel.send(response);
+
     try {
-      // Log out current client
       await client.destroy();
 
-      // Update .env file (optional - for persistence after restart)
+      // Update .env for persistence
       const envPath = path.join(process.cwd(), '.env');
       let envContent = fs.readFileSync(envPath, 'utf8');
       envContent = envContent.replace(/^TOKEN=.*/m, `TOKEN=${newToken}`);
       fs.writeFileSync(envPath, envContent);
 
-      // Login with new token
       await client.login(newToken);
 
-      const response = '```js\n' +
-        '  Token updated successfully\n' +
-        '  Bot reconnected with new account\n' +
-        '  Use carefully — never share tokens\n' +
-        '\n╰──────────────────────────────────╯\n```';
+      await statusMsg.edit('```js\n' +
+        'Token Changed Successfully\n\n' +
+        ' Bot reconnected\n' +
+        ' You are now using the new account\n' +
+        '\n╰──────────────────────────────────╯\n```');
 
-      await message.channel.send(response);
+      await message.react("✅").catch(() => {});
 
     } catch (error) {
       console.error("Token change failed:", error.message);
-      message.channel.send("```Failed to login with new token — invalid or rate-limited```");
+      await statusMsg.edit('```js\n' +
+        'Token Change Failed\n\n' +
+        ' Invalid or rate-limited token\n' +
+        ' Staying on old token\n' +
+        '\n╰──────────────────────────────────╯\n```');
+      await message.react("❌").catch(() => {});
     }
+
+    setTimeout(() => statusMsg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+    if (message.deletable) message.delete().catch(() => {});
   }
 };
