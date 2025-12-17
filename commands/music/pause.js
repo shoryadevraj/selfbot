@@ -7,7 +7,7 @@ export default {
   async execute(message, args, client) {
     const queue = client.queueManager.get(message.guild.id);
     if (!queue?.nowPlaying) {
-      return message.channel.send("```Nothing is playing right now```");
+      return message.channel.send("Nothing is playing right now");
     }
 
     try {
@@ -29,7 +29,7 @@ export default {
 
     } catch (error) {
       console.error("[Pause Error]:", error.message);
-      message.channel.send("```Failed to pause```").catch(() => {});
+      message.channel.send("Failed to pause").catch(() => {});
     }
   }
 };
