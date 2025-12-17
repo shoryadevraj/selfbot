@@ -3,16 +3,15 @@ export default {
   aliases: ["q"],
   category: "music",
   description: "Show current music queue",
-  usage: "queue",
 
   async execute(message, args, client) {
-    if (!message.guild) return;
-
     const queue = client.queueManager.get(message.guild.id);
 
     // Nothing playing at all
     if (!queue || (!queue.nowPlaying && queue.songs.length === 0)) {
-      return message.channel.send("```Queue is empty```");
+      await message.react("📭").catch(() => {});
+      if (message.deletable) message.delete().catch(() => {});
+      return;
     }
 
     let response = '```js\n';
@@ -30,12 +29,10 @@ export default {
       response += 'No songs in queue\n';
     } else {
       response += `Up Next (${queue.songs.length} song${queue.songs.length === 1 ? '' : 's'})\n\n`;
-
       queue.songs.slice(0, 15).forEach((song, i) => {
         response += ` ${i + 1}. ${song.info.title}\n`;
-        response += `    by ${song.info.author}\n\n`;
+        response += ` by ${song.info.author}\n\n`;
       });
-
       if (queue.songs.length > 15) {
         response += ` ...and ${queue.songs.length - 15} more\n`;
       }
@@ -43,11 +40,12 @@ export default {
 
     response += '╰──────────────────────────────────╯\n```';
 
-    await message.channel.send(response);
+    const msg = await message.channel.send(response);
 
-    // Clean chat — delete the !queue command
-    if (message.deletable) {
-      message.delete().catch(() => {});
-    }
+    // Auto-delete response
+    setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+
+    // Delete command message
+    if (message.deletable) message.delete().catch(() => {});
   }
 };
