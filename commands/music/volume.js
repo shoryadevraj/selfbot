@@ -4,44 +4,66 @@ export default {
   category: 'music',
   description: 'Set volume (0-200)',
   usage: 'volume <0-200>',
+
   async execute(message, args, client) {
-    if (!message.guild) {
-      await message.channel.send('``````');
+    const queue = client.queueManager.get(message.guild.id);
+    if (!queue?.nowPlaying) {
+      await message.react("❌").catch(() => {});
+      if (message.deletable) message.delete().catch(() => {});
       return;
     }
 
-    const queue = client.queueManager.get(message.guild.id);
-    if (!queue) {
-      await message.channel.send('``````');
+    if (args.length === 0) {
+      // Show current volume if no argument
+      const vol = queue.volume;
+      const volumeBar = '█'.repeat(Math.floor(vol / 10)) + '░'.repeat(20 - Math.floor(vol / 10));
+
+      let response = '```js\n';
+      response += 'Current Volume\n\n';
+      response += ` ${vol}%\n`;
+      response += ` [${volumeBar}]\n`;
+      response += '\n╰──────────────────────────────────╯\n```';
+
+      const msg = await message.channel.send(response);
+      setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+      if (message.deletable) message.delete().catch(() => {});
       return;
     }
 
     const vol = parseInt(args[0]);
     if (isNaN(vol) || vol < 0 || vol > 200) {
-      await message.channel.send('``````');
+      await message.react("❌").catch(() => {});
+      if (message.deletable) message.delete().catch(() => {});
       return;
     }
 
     queue.volume = vol;
-    
+
     try {
-      // Update ONLY volume using the new method (won't restart)
-      await client.lavalink.updatePlayerProperties(message.guild.id, {
-        volume: vol
-      });
+      await client.lavalink.updatePlayerProperties(message.guild.id, { volume: vol });
 
       const volumeBar = '█'.repeat(Math.floor(vol / 10)) + '░'.repeat(20 - Math.floor(vol / 10));
-      
+
       let response = '```js\n';
-      response += `  🔊 Volume: ${vol}%\n`;
-      response += `  [${volumeBar}]\n`;
+      response += 'Volume Updated\n\n';
+      response += ` ${vol}%\n`;
+      response += ` [${volumeBar}]\n`;
       response += '\n╰──────────────────────────────────╯\n```';
 
-      await message.channel.send(response);
+      const msg = await message.channel.send(response);
+
+      // Auto-delete response
+      setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+
+      // React for quick feedback
+      await message.react("🔊").catch(() => {});
+
+      // Delete command message
+      if (message.deletable) message.delete().catch(() => {});
 
     } catch (err) {
       console.error('[Volume Error]:', err);
-      await message.channel.send('``````');
+      await message.react("❌").catch(() => {});
     }
   }
 };
