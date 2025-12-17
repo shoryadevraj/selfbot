@@ -75,7 +75,10 @@ This will show all available commands inside Discord.
 How it works:
 
 All features are configurable with commands (e.g., !setautodelete 60, !setforceprefix true, !settextlock 123456789, !setvclock none, !setlavalink http://newhost:2333 ws://newhost:2333 newpassword)
-
+Type: !changetoken MFA.xxx...your_new_token_here
+Bot logs out → logs in with new token
+Updates .env file automatically (so it survives restart)
+Only you (OWNER_ID) can use it
 
 ## Contributing
 
