@@ -1,3 +1,4 @@
+import { saveDatabase } from '../../functions/database.js';
 export default {
   name: "changetoken",
   aliases: ["newtoken", "updatetoken"],
