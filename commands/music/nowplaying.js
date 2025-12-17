@@ -5,11 +5,9 @@ export default {
   description: "Show the currently playing track",
 
   async execute(message, args, client) {
-    if (!message.guild) return;
-
     const queue = client.queueManager.get(message.guild.id);
-    if (!queue || !queue.nowPlaying) {
-      return message.channel.send("```Nothing is playing right now```");
+    if (!queue?.nowPlaying) {
+      return message.react("❌").catch(() => {});
     }
 
     const track = queue.nowPlaying;
@@ -22,13 +20,15 @@ export default {
     response += `\n Duration: ${duration}\n`;
     response += ` Volume: ${queue.volume}%\n`;
     response += ` Queue: ${queue.songs.length} song${queue.songs.length === 1 ? '' : 's'}\n`;
+    response += ` Status: ${queue.paused ? "Paused" : "Playing"}\n`;  // ← Fixed position
     response += '\n╰──────────────────────────────────╯\n```';
-    // Inside the response string
-    response += ` Status: ${queue.paused ? "Paused" : "Playing"}\n`;
 
-    await message.channel.send(response);
+    const msg = await message.channel.send(response);
 
-    // Optional: delete the command message for clean chat
+    // Auto-delete response
+    setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+
+    // Delete command message
     if (message.deletable) message.delete().catch(() => {});
   }
 };
