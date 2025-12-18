@@ -9,8 +9,8 @@ export default {
   async execute(message, args, client) {
     if (!message.guild) return;
     const vc = message.member?.voice?.channel;
-    if (!vc) return message.channel.send("```Join a voice channel first```");
-    if (!args.length) return message.channel.send("```Give me a song name or URL```");
+    if (!vc) return message.channel.send("Join a voice channel first");
+    if (!args.length) return message.channel.send("Give me a song name or URL");
 
     const query = args.join(" ");
 
@@ -25,14 +25,14 @@ export default {
       await new Promise(r => setTimeout(r, 1500));
 
       const vs = client.voiceStates[message.guild.id];
-      if (!vs?.sessionId) return message.channel.send("```Voice not ready yet```");
+      if (!vs?.sessionId) return message.channel.send("Voice not ready yet");
 
       const result = await client.lavalink.loadTracks(
         query.startsWith("http") ? query : `ytsearch:${query}`
       );
 
       if (result.loadType === "empty" || !result.data) {
-        return message.channel.send("```No results found```");
+        return message.channel.send("No results found");
       }
 
       let track;
@@ -41,10 +41,10 @@ export default {
       } else if (result.loadType === "playlist" || result.loadType === "search") {
         track = result.data[0];
       } else {
-        return message.channel.send("```Invalid result type```");
+        return message.channel.send("Invalid result type");
       }
 
-      if (!track.info) return message.channel.send("```Invalid track```");
+      if (!track.info) return message.channel.send("Invalid track");
 
       let queue = client.queueManager.get(message.guild.id);
       if (!queue) {
@@ -52,23 +52,19 @@ export default {
         queue.textChannel = message.channel;
       }
 
-      let response = '```js\n';
+      let response = 'New Song\n';
 
       if (queue.nowPlaying) {
         client.queueManager.addSong(message.guild.id, track);
         response += '  ➕ Added to Queue\n';
         response += `  Position: ${queue.songs.length}\n\n`;
         response += `  ${track.info.title}\n`;
-        response += `  by ${track.info.author}\n`;
       } else {
         await client.startTrack(message.guild.id, track);
         response += '  ▶ Now Playing\n\n';
         response += `  ${track.info.title}\n`;
-        response += `  by ${track.info.author}\n`;
         response += `  Duration: ${formatDuration(track.info.length)}\n`;
       }
-
-      response += '\n╰──────────────────────────────────╯\n```';
 
       const msg = await message.channel.send(response);
 
