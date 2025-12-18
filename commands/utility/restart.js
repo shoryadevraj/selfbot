@@ -13,12 +13,6 @@ export default {
       return;
     }
 
-    const response = '```js\n' +
-      '  Restarting Bot\n\n' +
-      '  Logging out...\n' +
-      '  Be back in a few seconds\n' +
-      '\n╰──────────────────────────────────╯\n```';
-
     const msg = await message.channel.send(response);
     await message.react("🔄").catch(() => {});
 
