@@ -7,21 +7,19 @@ export default {
 
   async execute(message, args, client) {
     if (args.length !== 1) {
-      return message.channel.send("```Usage: setautodelete <seconds>```");
+      return message.channel.send("Usage: setautodelete <seconds>");
     }
 
     const time = parseInt(args[0]);
     if (isNaN(time) || time < 5) {
-      return message.channel.send("```Minimum 5 seconds```");
+      return message.channel.send("Minimum 5 seconds");
     }
 
     client.db.config.autoDeleteTime = time * 1000;
     saveDatabase(client.db);
 
-    const response = '```js\n' +
-      '  Auto-delete time updated\n' +
-      `  New time: ${time} seconds\n` +
-      '\n╰──────────────────────────────────╯\n```';
+    const response = '  Auto-delete time updated\n' +
+      `  New time: ${time} seconds\n`;
 
     const msg = await message.channel.send(response);
     
