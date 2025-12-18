@@ -7,7 +7,7 @@ export default {
   async execute(message, args, client) {
     const queue = client.queueManager.get(message.guild.id);
     if (!queue?.nowPlaying) {
-      return message.channel.send("```Nothing is playing right now```");
+      return message.channel.send("Nothing is playing right now");
     }
 
     try {
@@ -16,11 +16,9 @@ export default {
         paused: false  // ← This resumes the track
       });
 
-      let response = '```js\n';
-      response += '  ▶ Resumed\n';
+      let response = '  ▶ Resumed\n';
       response += '  Playing again\n';
-      response += '\n╰──────────────────────────────────╯\n```';
-
+      
       const msg = await message.channel.send(response);
 
       // Auto-delete after your configured time
