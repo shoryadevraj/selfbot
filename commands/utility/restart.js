@@ -1,5 +1,3 @@
-import { exec } from 'child_process';
-
 export default {
   name: "restart",
   aliases: ["reboot"],
@@ -13,16 +11,14 @@ export default {
       return;
     }
 
-    const msg = await message.channel.send(response);
     await message.react("🔄").catch(() => {});
 
-    // Auto-delete
-    setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
+    // Delete command message for clean chat
     if (message.deletable) message.delete().catch(() => {});
 
-    // Actual restart
+    // Restart after short delay
     setTimeout(() => {
       process.exit(0); // PM2/systemd will auto-restart
-    }, 3000);
+    }, 2000);
   }
 };
