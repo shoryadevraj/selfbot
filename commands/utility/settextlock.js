@@ -14,13 +14,11 @@ export default {
     }
 
     if (args.length !== 1) {
-      const response = '```js\n' +
-        'Usage\n\n' +
+      const response = 'Usage\n\n' +
         ' settextlock <channel_id or none>\n' +
         '\nExample:\n' +
         ' settextlock 123456789012345678\n' +
-        ' settextlock none\n' +
-        '\n╰──────────────────────────────────╯\n```';
+        ' settextlock none\n';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       if (message.deletable) message.delete().catch(() => {});
@@ -39,11 +37,9 @@ export default {
     client.db.config.lockTextChannel = channelId;
     saveDatabase(client.db);
 
-    const response = '```js\n' +
-      'Text Channel Lock Updated\n\n' +
+    const response = 'Text Channel Lock Updated\n\n' +
       ` Status: ${channelId ? "Locked" : "Unlocked"}\n` +
-      ` Channel: ${channelId || "Any"}\n` +
-      '\n╰──────────────────────────────────╯\n```';
+      ` Channel: ${channelId || "Any"}\n`;
 
     const msg = await message.channel.send(response);
     await message.react("✅").catch(() => {});
