@@ -16,8 +16,7 @@ export default {
         paused: true  // ← This pauses the track
       });
 
-      let response = 'js\n';
-      response += '  ⏸ Paused\n';
+      let response = '  ⏸ Paused\n';
       response += '  Current song paused\n';
 
       const msg = await message.channel.send(response);
