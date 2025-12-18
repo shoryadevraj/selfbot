@@ -18,12 +18,10 @@ export default {
       const vol = queue.volume;
       const volumeBar = '█'.repeat(Math.floor(vol / 10)) + '░'.repeat(20 - Math.floor(vol / 10));
 
-      let response = '```js\n';
-      response += 'Current Volume\n\n';
+      let response = 'Current Volume\n\n';
       response += ` ${vol}%\n`;
       response += ` [${volumeBar}]\n`;
-      response += '\n╰──────────────────────────────────╯\n```';
-
+  
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       if (message.deletable) message.delete().catch(() => {});
@@ -44,11 +42,9 @@ export default {
 
       const volumeBar = '█'.repeat(Math.floor(vol / 10)) + '░'.repeat(20 - Math.floor(vol / 10));
 
-      let response = '```js\n';
-      response += 'Volume Updated\n\n';
+      let response = 'Volume Updated\n\n';
       response += ` ${vol}%\n`;
       response += ` [${volumeBar}]\n`;
-      response += '\n╰──────────────────────────────────╯\n```';
 
       const msg = await message.channel.send(response);
 
