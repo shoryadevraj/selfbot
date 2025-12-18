@@ -24,11 +24,9 @@ export default {
       // Simple reaction + short message
       await message.react("⏹").catch(() => {});
 
-      let response = '```js\n';
-      response += '  ⏹ Stopped\n';
+      let response = '  ⏹ Stopped\n';
       response += '  🗑 Queue cleared\n';
       response += '  👋 Disconnected\n';
-      response += '\n╰──────────────────────────────────╯\n```';
 
       const msg = await message.channel.send(response);
 
