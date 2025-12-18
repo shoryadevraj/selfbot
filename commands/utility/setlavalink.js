@@ -14,12 +14,8 @@ export default {
     }
 
     if (args.length !== 3) {
-      const response = '```js\n' +
-        'Usage\n\n' +
-        ' setlavalink <rest_url> <ws_url> <password>\n' +
-        '\nExample:\n' +
-        ' setlavalink http://localhost:2333 ws://localhost:2333 youshallnotpass\n' +
-        '\n╰──────────────────────────────────╯\n```';
+      const response = 'Usage\n\n' +
+        ' setlavalink <rest_url> <ws_url> <password>\n';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       return;
@@ -33,11 +29,9 @@ export default {
     // Reload Lavalink
     client.reloadLavalink();
 
-    const response = '```js\n' +
-      'Lavalink Updated\n\n' +
+    const response = 'Lavalink Updated\n\n' +
       ' New node connected\n' +
-      ' Config saved\n' +
-      '\n╰──────────────────────────────────╯\n```';
+      ' Config saved\n';
 
     const msg = await message.channel.send(response);
     await message.react("✅").catch(() => {});
