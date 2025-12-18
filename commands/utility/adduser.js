@@ -14,11 +14,9 @@ export default {
     }
 
     if (args.length !== 1) {
-      const response = '```js\n' +
-        'Usage\n\n' +
+      const response = 'Usage\n\n' +
         ' adduser <user_id>\n' +
-        '\nExample: adduser 123456789012345678\n' +
-        '\n╰──────────────────────────────────╯\n```';
+        '\nExample: adduser 123456789012345678\n';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       if (message.deletable) message.delete().catch(() => {});
@@ -34,10 +32,8 @@ export default {
 
     const list = client.db.config.allowedUsers;
     if (list.includes(userId)) {
-      const response = '```js\n' +
-        'User Already Allowed\n\n' +
-        ` ID: ${userId}\n` +
-        '\n╰──────────────────────────────────╯\n```';
+      const response = 'User Already Allowed\n\n' +
+        ` ID: ${userId}\n`;
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       return;
@@ -46,11 +42,9 @@ export default {
     list.push(userId);
     saveDatabase(client.db);
 
-    const response = '```js\n' +
-      'User Added Successfully\n\n' +
+    const response = 'User Added Successfully\n\n' +
       ` ID: ${userId}\n` +
-      ` Total Allowed: ${list.length}\n` +
-      '\n╰──────────────────────────────────╯\n```';
+      ` Total Allowed: ${list.length}\n`;
 
     const msg = await message.channel.send(response);
     await message.react("✅").catch(() => {});
