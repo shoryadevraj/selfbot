@@ -6,7 +6,7 @@ export default {
     async execute(message, args, client) {
         const queue = client.queueManager.get(message.guild.id);
         if (!queue?.nowPlaying) {
-            return message.channel.send("```Nothing is playing```");
+            return message.channel.send("Nothing is playing");
         }
 
         // Clear current timeout and play next
@@ -16,10 +16,7 @@ export default {
 
         await client.playNext(message.guild.id);
 
-        const response = '```js\n' +
-            '  ⏭ Skipped current song\n' +
-            '  Now playing next track\n' +
-            '\n╰──────────────────────────────────╯\n```';
+        const response = '  ⏭ Skipped current song\n';
 
         const msg = await message.channel.send(response);
 
