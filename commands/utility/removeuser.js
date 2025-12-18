@@ -14,11 +14,9 @@ export default {
     }
 
     if (args.length !== 1) {
-      const response = '```js\n' +
-        'Usage\n\n' +
+      const response = 'Usage\n\n' +
         ' removeuser <user_id>\n' +
-        '\nExample: removeuser 123456789012345678\n' +
-        '\n╰──────────────────────────────────╯\n```';
+        '\nExample: removeuser 123456789012345678\n';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       if (message.deletable) message.delete().catch(() => {});
@@ -34,11 +32,9 @@ export default {
 
     const list = client.db.config.allowedUsers;
     if (!list.includes(userId)) {
-      const response = '```js\n' +
-        'User Not Found\n\n' +
+      const response = 'User Not Found\n\n' +
         ` ID: ${userId}\n` +
-        ' Not in allowed list\n' +
-        '\n╰──────────────────────────────────╯\n```';
+        ' Not in allowed list\n';
       const msg = await message.channel.send(response);
       setTimeout(() => msg.delete().catch(() => {}), client.db.config.autoDeleteTime || 30000);
       return;
@@ -47,11 +43,9 @@ export default {
     client.db.config.allowedUsers = list.filter(id => id !== userId);
     saveDatabase(client.db);
 
-    const response = '```js\n' +
-      'User Removed Successfully\n\n' +
+    const response = 'User Removed Successfully\n\n' +
       ` ID: ${userId}\n` +
-      ` Remaining: ${client.db.config.allowedUsers.length}\n` +
-      '\n╰──────────────────────────────────╯\n```';
+      ` Remaining: ${client.db.config.allowedUsers.length}\n`;
 
     const msg = await message.channel.send(response);
     await message.react("✅").catch(() => {});
