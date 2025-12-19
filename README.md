@@ -4,10 +4,10 @@
 
 Built with ❤️ by **Shorya Devraj**
 
-**Support Server (for any queries, help, or updates):**  .
+**Support Server (for any queries, help, or updates):** 
 https://discord.gg/dYQH4pSVX3
 
-## Features
+## Features of bot
 
 - **Auto-queue** — songs play one after another forever
 - **Pause / Resume / Skip / Stop / Volume**
