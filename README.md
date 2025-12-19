@@ -1,100 +1,116 @@
-# S Music Selfbot
+# Music Selfbot — Private Discord Music Bot (December 2025)
 
-A JavaScript-based Discord self-bot designed for streaming high-quality music from YouTube, Spotify, and multiple other platforms.  
-Optimized for speed, stability, and smooth performance.
+**The ultimate private Discord music selfbot — fully configurable, auto-queue, local Lavalink support, clean chat, and 24/7 hosting on Oracle Cloud.**
 
-## Disclaimer
+Built with ❤️ by **Shorya Devraj**
 
-This project is for educational purposes only.  
-The author is not responsible for any damage, misuse, or violations of Discord's Terms of Service.
-
-Self-bots are against Discord ToS.  
-Use at your own risk.
+**Support Server (for any queries, help, or updates):**  
+https://discord.gg/dYQH4pSVX3
 
 ## Features
 
-| Feature | Description |
-|--------|-------------|
-| Reliable and Lightweight | Designed for stability, smooth operation, and low resource usage |
-| Autoplay System | AI-powered music autoplay functionality |
-| Lavalink Integration | Uses Lavalink’s advanced audio system |
-| Custom Filters | Includes filters like LoFi and more |
-| Speed and Security | Optimized for fast, secure runtime |
+- **Auto-queue** — songs play one after another forever
+- **Pause / Resume / Skip / Stop / Volume**
+- **Filters** (bassboost, nightcore, vaporwave, tremolo, vibrato, distortion, rotation, karaoke, lowpass, etc.)
+- **Queue management** (`!queue`, `!nowplaying`)
+- **Beautiful code block responses** with auto-delete
+- **Reaction feedback** for quick actions (✅ ❌ 🔄 ⏸ ▶ ⏭ ⏹ etc.)
+- **Full config via commands** (no restart needed):
+  - `!setforceprefix true/false` — require prefix or allow no-prefix
+  - `!settextlock <channel_id/none>` — lock commands to specific text channel
+  - `!setvclock <channel_id/none>` — lock music commands to specific voice channel
+  - `!setautodelete <seconds>` — auto-delete bot messages after X seconds
+  - `!setlavalink <rest> <ws> <password>` — switch Lavalink node live
+  - `!changetoken <new_token>` — change Discord token live (owner only)
+  - `!gitpull` — pull latest code from GitHub live
+  - `!restart` — restart bot
+  - `!status` — show uptime, config, Lavalink status
+  - `!adduser / !removeuser` — manage allowed users
+- **Local Lavalink support** — zero latency, no public node limits
+- **Owner-only protection** for sensitive commands
+- **Clean chat** — command messages deleted, responses auto-deleted
+- **Silent mode** — many actions use reactions only (no text spam)
 
-## Installation
+## Requirements
 
-### Requirements
+- Discord user account (selfbot — use at your own risk)
+- Node.js 20+
+- Java 17+ (for local Lavalink)
+- PM2 (process manager)
 
-| Requirement | Description |
-|------------|-------------|
-| Node.js | Latest LTS recommended |
-| Discord Token | Insert manually in the script (line 25) |
-| Lavalink Server | Local or remote Lavalink instance |
+## Hosting (Recommended: Oracle Cloud Always Free Tier)
 
-## Setup Guide
+This bot is designed to run 24/7 on **Oracle Cloud Always Free** (up to 4 cores + 24 GB RAM total — free forever).
 
-### Step 1: Initialize Project
+### Quick Setup on Oracle VM
 
-```bash
-npm init -y
-```
+1. Create free Oracle Cloud account → VM.Standard.E3.Flex (1 OCPU, 16 GB RAM)
+2. SSH in as `opc`
+3. Install Node 20:
+   ```bash
+   curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
+   sudo yum install -y nodejs
+   
+## Install PM2 and git:
 
-### Step 2: Install Dependencies
+sudo npm install -g pm2
+sudo yum install -y git
 
+**Clone your repo (HTTPS with token or SSH key)**
+
+npm install
+
+Create .env with TOKEN, OWNER_ID, etc.
+
+- Start bot:
+pm2 start index.js --name "selfbot"
+pm2 save
+pm2 startup  # run the command it shows
+
+Optional: 
+- Local Lavalink (best performance)
+wget https://github.com/lavalink-devs/Lavalink/releases/latest/download/Lavalink.jar
+nano application.yml  # paste minimal config
+pm2 start "java -jar Lavalink.jar" --name "lavalink"
+pm2 save
+
+Then in Discord:
+!setlavalink http://localhost:2333 ws://localhost:2333 youshallnotpass
+
+- Note : You can run this bot on public node as well (write node in .env or using commands)
+
+  # Hosting Music Selfbot in GitHub Codespaces (Temporary Testing)
+
+This guide shows how to quickly host and test your selfbot in **GitHub Codespaces** — a free cloud development environment (up to 60 hours/month on free plan). Perfect for testing new features, debugging, or short sessions without setting up a permanent server.
+
+**Note**: Codespaces stops when inactive (few hours) and is not for 24/7 use. For permanent hosting, use Oracle Cloud.
+
+## Requirements
+
+- GitHub account
+- Your selfbot code in a **private or public** GitHub repo
+- Do **NOT** commit your `.env` file or token (we'll add secrets safely)
+
+## Step-by-Step Hosting in Codespaces
+
+### 1. Push your code to GitHub
+- Make sure your repo has all files:
+  - `index.js`
+  - `commands/` folder
+  - `functions/` folder
+  - `package.json`
+- **Never commit** `.env` or tokens!
+
+### 2. Open Codespace
+1. Go to your repo on GitHub
+2. Click the green **Code** button
+3. Go to **Codespaces** tab
+4. Click **Create codespace on main**
+
+→ Codespace boots in 1–2 minutes (VS Code in browser opens)
+
+### 3. Install dependencies
+In the terminal at the bottom:
 ```bash
 npm install
-```
-
-### Step 3: Run the Selfbot
-
-```bash
-node index.js
-```
-
-## Usage
-
-Start the bot, then type:
-
-```
-help
-```
-
-This will show all available commands inside Discord.
-
-## Project Structure
-
-| File / Folder | Purpose |
-|---------------|---------|
-| index.js | Entry point of the self-bot |
-| lavalink.js | Handles Lavalink connections |
-| config.json | Store token and configuration values |
-| commands/ | Command modules |
-| filters/ | Music filter definitions |
-
-## New Features
-How it works:
-
-All features are configurable with command
-- (e.g., !setautodelete 60, !setforceprefix true, !settextlock 123456789, !setvclock none,
-- !setlavalink http://newhost:2333 ws://newhost:2333 newpassword)
-
-Type: 
-- !changetoken MFA.xxx...your_new_token_here
-- Bot logs out → logs in with new token
-- Updates .env file automatically (so it survives restart)
-- Only you (OWNER_ID) can use it
-- !restart – restarts the bot instantly (owner only)
-- !status – shows uptime, server info, current config, Lavalink status
-- gitpull – pulls latest code from GitHub without restarting (so you can update commands/fixes live)
-
-## Contributing
-
-Contributions, issue reports, and suggestions are welcome.  
-Feel free to open a pull request or participate in discussions on the Discord server.
-
-## Important Notices
-
-- Re-selling or redistributing this code will result in a permanent ban from the support community.  
-- Use this project responsibly.  
-- The author is not accountable for misuse, violations, or account bans caused by self-botting.
-
+TOKEN=your_token_here OWNER_ID=your_id_here PREFIX=! node index.js
