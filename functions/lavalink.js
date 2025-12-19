@@ -15,12 +15,10 @@ class Lavalink {
 
   async connect(userId) {
     this.userId = userId;
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
+    if (this.ws) this.ws.close();
 
-    this.ws = new WebSocket(this.wsHost, {
+    // v4 websocket path
+    this.ws = new WebSocket(`${this.wsHost}/v4/websocket`, {
       headers: {
         Authorization: this.password,
         'User-Id': userId,
@@ -29,7 +27,7 @@ class Lavalink {
     });
 
     this.ws.on('open', () => console.log('[Lavalink] Connected'));
-    this.ws.on('close', (code, reason) => console.log(`[Lavalink] Closed: ${code}`));
+    this.ws.on('close', (code) => console.log(`[Lavalink] Closed: ${code}`));
     this.ws.on('error', (error) => console.error('[Lavalink] Error:', error));
     this.ws.on('message', (msg) => {
       try {
@@ -69,41 +67,28 @@ class Lavalink {
     if (listener) listener(data);
   }
 
+  // v4 loadtracks path
   async loadTracks(identifier) {
-    const url = `${this.restHost}/loadtracks?identifier=${encodeURIComponent(identifier)}`;
+    const url = `${this.restHost}/v4/loadtracks?identifier=${encodeURIComponent(identifier)}`;
     const res = await fetch(url, { headers: { Authorization: this.password } });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   }
 
-  // FIXED: updatePlayer with optional track parameter
+  // v4 player update
   async updatePlayer(guildId, track, voiceState, options = {}) {
     if (!this.sessionId) throw new Error('Session ID not set');
-    const url = `${this.restHost}/sessions/${this.sessionId}/players/${guildId}`;
+    const url = `${this.restHost}/v4/sessions/${this.sessionId}/players/${guildId}`;
 
-    const payload = {
-      voice: voiceState
-    };
+    const payload = { voice: voiceState };
 
-    // Only include track if provided (for playing new songs)
     if (track) {
       payload.track = { encoded: track.encoded };
     }
 
-    // Add volume if specified
-    if (options.volume !== undefined) {
-      payload.volume = options.volume;
-    }
-
-    // Add paused state if specified
-    if (options.paused !== undefined) {
-      payload.paused = options.paused;
-    }
-
-    // Add filters if specified
-    if (options.filters !== undefined) {
-      payload.filters = options.filters;
-    }
+    if (options.volume !== undefined) payload.volume = options.volume;
+    if (options.paused !== undefined) payload.paused = options.paused;
+    if (options.filters !== undefined) payload.filters = options.filters;
 
     const res = await fetch(url, {
       method: 'PATCH',
@@ -115,29 +100,16 @@ class Lavalink {
     return await res.json();
   }
 
-  // NEW: Update only specific properties without track
   async updatePlayerProperties(guildId, properties = {}) {
     if (!this.sessionId) throw new Error('Session ID not set');
-    const url = `${this.restHost}/sessions/${this.sessionId}/players/${guildId}`;
+    const url = `${this.restHost}/v4/sessions/${this.sessionId}/players/${guildId}`;
 
     const payload = {};
 
-    // Only include provided properties
-    if (properties.volume !== undefined) {
-      payload.volume = properties.volume;
-    }
-
-    if (properties.paused !== undefined) {
-      payload.paused = properties.paused;
-    }
-
-    if (properties.filters !== undefined) {
-      payload.filters = properties.filters;
-    }
-
-    if (properties.position !== undefined) {
-      payload.position = properties.position;
-    }
+    if (properties.volume !== undefined) payload.volume = properties.volume;
+    if (properties.paused !== undefined) payload.paused = properties.paused;
+    if (properties.filters !== undefined) payload.filters = properties.filters;
+    if (properties.position !== undefined) payload.position = properties.position;
 
     const res = await fetch(url, {
       method: 'PATCH',
@@ -151,7 +123,7 @@ class Lavalink {
 
   async destroyPlayer(guildId) {
     if (!this.sessionId) throw new Error('Session ID not set');
-    const url = `${this.restHost}/sessions/${this.sessionId}/players/${guildId}`;
+    const url = `${this.restHost}/v4/sessions/${this.sessionId}/players/${guildId}`;
     const res = await fetch(url, { method: 'DELETE', headers: { Authorization: this.password } });
     return res.status === 204;
   }
